@@ -20,13 +20,14 @@ class Broker:
         if app:
             self.init_app(app, url)
 
-    def init_app(self, app, url=None):
+    def init_app(self, app, url='/events'):
 
         if 'sse' not in app.extensions:
             app.extensions['sse'] = self
 
-        if url:
-            app.register_blueprint(self.create_blueprint(url))
+        app.register_blueprint(self.create_blueprint(url))
+
+        return self
 
     def __len__(self):
 
