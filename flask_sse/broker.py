@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 class Broker:
 
-    def __init__(self, app=None, timeout=30, url=None):
+    def __init__(self, app=None, keepalive_interval=60, url=None):
 
         self._subscribers = list()
-        self.timeout = timeout
+        self.keepalive_interval = keepalive_interval
 
         if app:
             self.init_app(app, url)
@@ -35,8 +35,8 @@ class Broker:
 
     def __iter__(self):
 
-        for subscriber in self._subscribers:
-            yield subscriber
+        for q in self._subscribers:
+            yield q
 
     def create_blueprint(self, url):
 
@@ -57,7 +57,7 @@ class Broker:
         try:
             while True:
                 try:
-                    sse = q.get(timeout=self.timeout)
+                    sse = q.get(timeout=self.keepalive_interval)
                     if sse is StopIteration:
                         break
                     if callable(callback):
@@ -65,7 +65,7 @@ class Broker:
                     if sse:
                         yield str(sse)
                 except Empty:
-                    yield str(ServerSentEvent(event='ping'))
+                    yield str(ServerSentEvent(event='keepalive'))
         finally:
             logger.debug('removing queue from disconnected client')
             self._subscribers.remove(q)

@@ -12,7 +12,7 @@ def app():
     """ flask app for pytest-flask to test flask-sse"""
 
     app = Flask('live_server')
-    sse = Broker(app, timeout=2, url='/subscribe')
+    sse = Broker(app, keepalive_interval=2, url='/subscribe')
     @app.route('/')
     def route():
         return 'OK'

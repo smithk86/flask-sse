@@ -23,7 +23,7 @@ test_sse_objects = [
     ServerSentEvent(**test_sse_data[3]),
     ServerSentEvent(**test_sse_data[4])
 ]
-test_sse_str_ping = 'data: -\nevent: ping\n\n'
+test_sse_str_keepalive = 'data: -\nevent: keepalive\n\n'
 test_sse_str_close = 'data: -\nevent: close\n\n'
 test_sse_str = [
     'data: 1166aa5d-195b-4a7a-8289-b95347aa2185\n\n',
@@ -66,7 +66,7 @@ def test_sse_broker(request, app):
     sse_output_proto = ''
     for s in test_sse_str:
         sse_output_proto += s
-    sse_output_proto += test_sse_str_ping
+    sse_output_proto += test_sse_str_keepalive
     for s in test_sse_str:
         sse_output_proto += s
     sse_output_proto += test_sse_str_close
