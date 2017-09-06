@@ -51,16 +51,13 @@ class Broker:
 
     def subscribe(self, callback=None):
 
-        subscriber = {
-            'queue': Queue(),
-            'events_stats': dict()
-        }
-        self._subscribers.append(subscriber)
+        q = Queue()
+        self._subscribers.append(q)
 
         try:
             while True:
                 try:
-                    sse = subscriber['queue'].get(timeout=self.timeout)
+                    sse = q.get(timeout=self.timeout)
                     if sse is StopIteration:
                         break
                     if callable(callback):
@@ -69,25 +66,20 @@ class Broker:
                         yield str(sse)
                 except Empty:
                     yield str(ServerSentEvent(event='ping'))
-
         finally:
             logger.debug('removing queue from disconnected client')
-            self._subscribers.remove(subscriber)
+            self._subscribers.remove(q)
 
     def put(self, **sse_args):
 
-        stats_event_key = sse_args.get('event') if sse_args.get('event') else '_'
         logger.debug('queueing SSE: [{}]'.format(', '.join(['{}: {}'.format(k,v) for k, v in sse_args.items()])))
-        for subscriber in self._subscribers:
+        for q in self._subscribers:
             sse = ServerSentEvent(**sse_args)
-            if stats_event_key not in subscriber['events_stats']:
-                subscriber['events_stats'][stats_event_key] = 0
-            subscriber['events_stats'][stats_event_key] += 1
-            subscriber['queue'].put(sse)
+            q.put(sse)
 
     def close(self):
 
         self.put(event='close')
 
-        for q in [s['queue'] for s in self._subscribers]:
+        for q in self._subscribers:
             q.put(StopIteration)
