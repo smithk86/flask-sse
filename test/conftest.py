@@ -9,7 +9,7 @@ from flask_sse import Broker
 
 @pytest.fixture
 def app():
-    """ flask app for pytest-flask """
+    """ flask app for pytest-flask to test flask-sse"""
 
     app = Flask('live_server')
     sse = Broker(app, timeout=2, url='/subscribe')

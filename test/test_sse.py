@@ -6,6 +6,7 @@ import requests
 import gevent
 
 from flask_sse import ServerSentEvent
+from pytest_flask_gevent_wsgiserver.plugin import live_server
 
 
 test_sse_data = [
