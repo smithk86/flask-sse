@@ -72,7 +72,7 @@ class Broker:
 
     def put(self, **sse_args):
 
-        logger.debug('queueing SSE: [{}]'.format(', '.join(['{}: {}'.format(k,v) for k, v in sse_args.items()])))
+        logger.debug('queueing event: [{}]'.format(', '.join(['{}: {}'.format(k,v) for k, v in sse_args.items()])))
         for q in self._subscribers:
             sse = ServerSentEvent(**sse_args)
             q.put(sse)
