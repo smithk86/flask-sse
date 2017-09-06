@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from flask import Blueprint, Response
 from queue import Empty
@@ -12,10 +13,15 @@ logger = logging.getLogger(__name__)
 
 class Broker:
 
-    def __init__(self, app=None, keepalive_interval=60, url=None):
+    def __init__(self, app=None, keepalive_interval=60, url=None, cache_maxsize=100):
+
+        if cache_maxsize < 1:
+            raise ValueError('cache maxsize must be greater than zero')
 
         self._subscribers = list()
         self.keepalive_interval = keepalive_interval
+        self.index = 0
+        self.cache = Queue(maxsize=cache_maxsize)
 
         if app:
             self.init_app(app, url)
@@ -42,16 +48,16 @@ class Broker:
 
         blueprint = Blueprint('sse', __name__)
         @blueprint.route(url)
-        def route_subscribe():
+        def subscribe():
             return Response(
                 self.subscribe(),
                 mimetype='text/event-stream'
             )
         return blueprint
 
-    def subscribe(self, callback=None):
+    def subscribe(self, use_cache=False, callback=None):
 
-        q = Queue()
+        q = self.cache.copy() if use_cache is True else Queue()
         self._subscribers.append(q)
 
         try:
@@ -72,9 +78,21 @@ class Broker:
 
     def put(self, **sse_args):
 
+        self.index += 1
+        if 'id' not in sse_args:
+            sse_args['id'] = self.index
+        sse = ServerSentEvent(**sse_args)
         logger.debug('queueing event: [{}]'.format(', '.join(['{}: {}'.format(k,v) for k, v in sse_args.items()])))
+
+        if self.cache.full():
+            self.cache.get()
+        self.cache.put({
+            'index': self.index,
+            'date': datetime.now(),
+            'sse': sse
+        })
+
         for q in self._subscribers:
-            sse = ServerSentEvent(**sse_args)
             q.put(sse)
 
     def close(self):

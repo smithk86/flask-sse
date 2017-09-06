@@ -37,7 +37,9 @@ class ServerSentEvent(object):
         return output
 
     def __str__(self):
-
         return '{}\n\n'.format('\n'.join(
             ['{}: {}'.format(k, v) for k, v in self.format().items()]
         ))
+
+    def __repr__(self):
+        return '<ServerSentEvent event="{}">'.format(self.event if self.event else '')
