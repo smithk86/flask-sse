@@ -5,6 +5,10 @@ from setuptools import setup
 setup(
     name='flask-sse',
     version='0.1',
+    license='MIT',
+    author='Kyle Smith',
+    author_email='smithk86@gmail.com',
+    description='flask plugin to facilitate server-sent events',
     packages=['flask_sse'],
     install_requires=[
         'flask',
@@ -16,7 +20,8 @@ setup(
     tests_require=[
         'pytest',
         'pytest-flask',
-        'pytest-flask-gevent-wsgiserver'
+        'pytest-flask-gevent-wsgiserver',
+        'requests'
     ],
     classifiers=[
         'Framework :: Flask',
