@@ -2,11 +2,14 @@ import logging
 from datetime import datetime
 
 from flask import Blueprint, Response
-from queue import Empty
 from gevent.queue import Queue
 
 from .server_sent_event import ServerSentEvent
 
+try:
+    from queue import Empty
+except ImportError:
+    from Queue import Empty
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,8 @@ logger = logging.getLogger(__name__)
 class Broker:
 
     def __init__(self, app=None, keepalive_interval=60, url=None, cache_maxsize=100):
+
+        cache_maxsize = int(cache_maxsize)
 
         if cache_maxsize < 1:
             raise ValueError('cache maxsize must be greater than zero')

@@ -1,3 +1,4 @@
+import sys
 from collections import OrderedDict
 
 from flask import url_for
@@ -9,6 +10,8 @@ from gevent.pool import Group
 
 from flask_sse import ServerSentEvent, Broker
 from pytest_flask_gevent_wsgiserver.plugin import live_server
+
+PY3 = sys.version_info > (3,)
 
 _sse_keepalive_data = {'event': 'keepalive'}
 _sse_close_data = {'event': 'close'}
@@ -71,14 +74,17 @@ def test_server_sent_event_exception():
 
 def test_broker_maxsize():
 
+    Broker(cache_maxsize='3000')
+
     with pytest.raises(ValueError, match='cache maxsize must be greater than zero'):
         Broker(cache_maxsize=0)
 
-    with pytest.raises(TypeError, match='unorderable types: NoneType\(\) < int\(\)'):
-        Broker(cache_maxsize=None)
-
-    with pytest.raises(TypeError, match='unorderable types: str\(\) < int\(\)'):
-        Broker(cache_maxsize='3000')
+    if PY3:
+        with pytest.raises(TypeError, match="int\(\) argument must be a string, a bytes-like object or a number, not 'NoneType'"):
+            Broker(cache_maxsize=None)
+    else:
+        with pytest.raises(TypeError, match="int\(\) argument must be a string or a number, not 'NoneType'"):
+            Broker(cache_maxsize=None)
 
 
 @pytest.mark.usefixtures('live_server')
