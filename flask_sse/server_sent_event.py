@@ -6,39 +6,35 @@ from collections import OrderedDict
 class ServerSentEvent(object):
 
     def __init__(self, data=None, event=None, retry=None, id=None):
-
         if data is None and event is None:
             raise ValueError('data and event cannot both be None')
-
         self.data = data
         self.event = event
         self.retry = retry
         self.id = id
 
-    def format(self):
-
-        if self.data is None:
-            _data = '-'
-        elif isinstance(self.data, str):
-            _data = self.data
+    def _format(self):
+        items = OrderedDict(self)
+        if items['data'] is None:
+            items['data'] = '-'
+        elif isinstance(items['data'], str):
+            pass
         else:
-            _data = json.dumps(self.data)
+            items['data'] = json.dumps(items['data'])
+        return items
 
-        output = OrderedDict()
-
+    def __iter__(self):
         if self.retry:
-            output['retry'] = self.retry
-        output['data'] = _data
+            yield 'retry', self.retry
+        yield 'data', self.data
         if self.event:
-            output['event'] = self.event
+            yield 'event', self.event
         if self.id:
-            output['id'] = self.id
-
-        return output
+            yield 'id', self.id
 
     def __str__(self):
         return '{}\n\n'.format('\n'.join(
-            ['{}: {}'.format(k, v) for k, v in self.format().items()]
+            ['{}: {}'.format(k, v) for k, v in self._format().items()]
         ))
 
     def __repr__(self):
