@@ -13,7 +13,7 @@ class ServerSentEvent(object):
         self.retry = retry
         self.id = id
 
-    def _format(self):
+    def format(self):
         items = OrderedDict(self)
         if items['data'] is None:
             items['data'] = '-'
@@ -34,7 +34,7 @@ class ServerSentEvent(object):
 
     def __str__(self):
         return '{}\n\n'.format('\n'.join(
-            ['{}: {}'.format(k, v) for k, v in self._format().items()]
+            ['{}: {}'.format(k, v) for k, v in self.format().items()]
         ))
 
     def __repr__(self):

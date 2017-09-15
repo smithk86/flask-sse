@@ -97,7 +97,11 @@ class Broker:
         if 'id' not in sse_args:
             sse_args['id'] = self.index
         sse = ServerSentEvent(**sse_args)
-        logger.debug('queueing event: [{}]'.format(', '.join(['{}: {}'.format(k,v) for k, v in sse_args.items()])))
+
+        if logger.isEnabledFor(logging.DEBUG):
+            debug_sse_args = sse.format()
+            debug_sse_args['data'] = debug_sse_args['data'] if len(debug_sse_args['data']) < 20 else '{}...'.format(debug_sse_args['data'][:20])
+            logger.debug('queueing event: [{}]'.format(', '.join(['{}: {}'.format(k,v) for k, v in debug_sse_args.items()])))
 
         if self.cache.full():
             self.cache.get()
