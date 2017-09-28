@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Broker:
 
-    def __init__(self, app=None, debug=False, keepalive_interval=60, url=None, cache_maxsize=100):
+    def __init__(self, app=None, debug=False, keepalive_interval=60, url='/events', cache_maxsize=100):
 
         cache_maxsize = int(cache_maxsize)
 
@@ -30,9 +30,9 @@ class Broker:
         self.cache = Queue(maxsize=cache_maxsize)
 
         if app:
-            self.init_app(app, url, )
+            self.init_app(app, url)
 
-    def init_app(self, app, url='/events'):
+    def init_app(self, app, url):
 
         if 'sse' not in app.extensions:
             app.extensions['sse'] = self
