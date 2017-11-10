@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+import logging
 from uuid import uuid4
 
 from flask import current_app, Flask, render_template
 from flask_sse import Broker
 import gevent
 from gevent.wsgi import WSGIServer
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(
 	'example',

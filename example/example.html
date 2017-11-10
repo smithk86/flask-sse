@@ -10,12 +10,15 @@
         }
     </style>
     <script type="text/javascript">
+
+        var eventSource = null
+
         function put_message(msg) {
             $.get(`/${msg}`)
         }
 
         $(document).ready(function() {
-            var eventSource = new EventSource('/events')
+            eventSource = new EventSource('/events')
             eventSource.addEventListener('message', function(e) {
                 $('table tbody').append(`<tr><td>${e.lastEventId}</td><td>${e.type}</td><td>${e.data}</td></tr>`)
             })
