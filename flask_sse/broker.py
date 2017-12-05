@@ -66,9 +66,14 @@ class Broker:
 
     def subscribe(self, use_cache=False, callback=None):
 
-        q = self.cache.copy() if use_cache is True else Queue()
-        self._subscribers.append(q)
+        q = Queue()
+        if use_cache:
+            _cache_copy = self.cache.copy()
+            _cache_copy.put(StopIteration)
+            for c in _cache_copy:
+                q.put(c['sse'])
 
+        self._subscribers.append(q)
         try:
             while True:
                 try:
