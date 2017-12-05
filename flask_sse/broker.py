@@ -17,12 +17,6 @@ logger = logging.getLogger(__name__)
 class Broker:
 
     def __init__(self, app=None, debug=False, keepalive_interval=60, url='/events', cache_maxsize=100):
-
-        cache_maxsize = int(cache_maxsize)
-
-        if cache_maxsize < 1:
-            raise ValueError('cache maxsize must be greater than zero')
-
         self.debug = debug
         self._subscribers = list()
         self.keepalive_interval = keepalive_interval
