@@ -59,7 +59,7 @@ class Broker:
             @blueprint.route(url + '/debug')
             def debug():
                 cache = list()
-                for c in self.cache_dump():
+                for c in self.cache():
                     c = c.copy()
                     c['sse'] = dict(c.pop('sse'))
                     cache.append(c)
@@ -140,9 +140,3 @@ class Broker:
             'subscribers_count': len(self._subscribers),
             'subscribers': [{'qsize': q.qsize()} for q in self._subscribers]
         }
-
-    def cache_dump(self):
-
-        _copy = self._cache.copy()
-        while _copy.qsize() > 0:
-            yield _copy.get()
