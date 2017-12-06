@@ -21,7 +21,7 @@ class Broker:
         self._subscribers = list()
         self.keepalive_interval = keepalive_interval
         self.index = 0
-        self.cache = Queue(maxsize=cache_maxsize)
+        self._cache = Queue(maxsize=cache_maxsize)
 
         if app:
             self.init_app(app, url)
@@ -41,6 +41,11 @@ class Broker:
     def __iter__(self):
         for q in self._subscribers:
             yield q
+
+    def cache(self):
+        _copy = self._cache.copy()
+        _copy.put(StopIteration)
+        return _copy
 
     def create_blueprint(self, url):
         blueprint = Blueprint('sse', __name__)
@@ -68,9 +73,7 @@ class Broker:
 
         q = Queue()
         if use_cache:
-            _cache_copy = self.cache.copy()
-            _cache_copy.put(StopIteration)
-            for c in _cache_copy:
+            for c in self.cache():
                 q.put(c['sse'])
 
         self._subscribers.append(q)
@@ -102,9 +105,9 @@ class Broker:
             debug_sse_args['data'] = debug_sse_args['data'] if len(debug_sse_args['data']) < 20 else '{}...'.format(debug_sse_args['data'][:20])
             logger.debug('queueing event: [{}]'.format(', '.join(['{}: {}'.format(k,v) for k, v in debug_sse_args.items()])))
 
-        if self.cache.full():
-            self.cache.get()
-        self.cache.put({
+        if self._cache.full():
+            self._cache.get()
+        self._cache.put({
             'index': self.index,
             'date': datetime.now(),
             'sse': sse
@@ -123,7 +126,7 @@ class Broker:
     def cache_peek(self):
 
         try:
-            return self.cache.peek_nowait()
+            return self._cache.peek_nowait()
         except Empty:
             return None
 
@@ -131,7 +134,7 @@ class Broker:
 
         return {
             'cache': {
-                'qsize': self.cache.qsize(),
+                'qsize': self._cache.qsize(),
                 'oldest': self.cache_peek()['date'] if self.cache_peek() else None
             },
             'subscribers_count': len(self._subscribers),
@@ -140,6 +143,6 @@ class Broker:
 
     def cache_dump(self):
 
-        _copy = self.cache.copy()
+        _copy = self._cache.copy()
         while _copy.qsize() > 0:
             yield _copy.get()
