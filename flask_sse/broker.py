@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from copy import copy
 
 from flask import Blueprint, Response, jsonify
 from gevent.queue import Queue
@@ -83,9 +84,10 @@ class Broker:
                     sse = q.get(timeout=self.keepalive_interval)
                     if sse is StopIteration:
                         break
-                    if callable(callback):
-                        sse = callback(sse)
-                    if sse:
+                    elif isinstance(sse, ServerSentEvent):
+                        sse = copy(sse)
+                        if callable(callback):
+                            callback(sse)
                         yield str(sse)
                 except Empty:
                     yield str(ServerSentEvent(event='keepalive'))

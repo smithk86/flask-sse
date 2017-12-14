@@ -1,4 +1,5 @@
 import json
+from copy import copy
 from collections import OrderedDict
 
 
@@ -12,6 +13,14 @@ class ServerSentEvent(object):
         self.event = event
         self.retry = retry
         self.id = id
+
+    def __copy__(self):
+        return ServerSentEvent(
+            data=copy(self.data),
+            event=self.event,
+            retry=self.retry,
+            id=self.id
+        )
 
     def format(self):
         items = OrderedDict(self)
