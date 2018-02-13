@@ -142,3 +142,17 @@ class Broker:
             'subscribers_count': len(self._subscribers),
             'subscribers': [{'qsize': q.qsize()} for q in self._subscribers]
         }
+
+    def put_rate(self, event):
+        cache = self.cache()
+        oldest_item =  cache.peek()
+        if oldest_item is StopIteration:
+            return
+        date = oldest_item['date']
+        event_count = 0
+        for q in cache:
+            if q['sse'].event == event:
+                event_count += 1
+        date_diff_seconds = (datetime.now() - date).total_seconds()
+        rate = event_count / date_diff_seconds
+        self.put(data=rate, event=f'{event}.rate')
