@@ -22,7 +22,8 @@ class Broker:
         self._subscribers = list()
         self.keepalive_interval = keepalive_interval
         self.index = 0
-        self._cache = Queue(maxsize=cache_maxsize)
+        self.cache_maxsize = cache_maxsize
+        self.init_cache()
 
         if app:
             self.init_app(app, url)
@@ -47,6 +48,9 @@ class Broker:
         _copy = self._cache.copy()
         _copy.put(StopIteration)
         return _copy
+
+    def init_cache(self):
+        self._cache = Queue(maxsize=self.cache_maxsize)
 
     def create_blueprint(self, url):
         blueprint = Blueprint('sse', __name__)
