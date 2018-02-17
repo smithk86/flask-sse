@@ -146,26 +146,3 @@ class Broker:
             'subscribers_count': len(self._subscribers),
             'subscribers': [{'qsize': q.qsize()} for q in self._subscribers]
         }
-
-    def event_oldest_cache(self, event):
-        for c in self.cache():
-            if c['sse'].event == event:
-                return c
-
-    def event_count(self, event):
-        count = 0
-        for c in self.cache():
-            if c['sse'].event == event:
-                count += 1
-        return count
-
-    def put_rate(self, event):
-        oldest_cache = self.event_oldest_cache(event)
-        if oldest_cache is None:
-            self.put(data=0, event=f'{event}.rate')
-        else:
-            date = oldest_cache['date']
-            count = self.event_count(event)
-            date_diff_seconds = (datetime.now() - date).total_seconds()
-            rate = count / date_diff_seconds
-            self.put(data=rate, event=f'{event}.rate')
